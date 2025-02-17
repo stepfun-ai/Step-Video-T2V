@@ -81,7 +81,7 @@ class MultiQueryAttention(nn.Module):
             dim=-1,
         )
 
-        # gather on 1st dimention
+        # gather on 1st dimension
         xq = xq.view(seqlen, bsz, self.n_local_heads, self.head_dim)
         xkv = xkv.view(seqlen, bsz, self.n_local_groups, 2 * self.head_dim)
         xk, xv = xkv.chunk(2, -1)

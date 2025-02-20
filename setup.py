@@ -15,9 +15,9 @@ def get_cuda_version():
 
 
 if __name__ == "__main__":
-    with open("README.md", "r") as f:
+    with open("README.md", "r", encoding="utf-8") as f:
         long_description = f.read()
-    fp = open("stepvideo/__version__.py", "r").read()
+    fp = open("stepvideo/__version__.py", "r", encoding="utf-8").read()
     version = eval(fp.strip().split()[-1])
 
     setup(
@@ -42,6 +42,7 @@ if __name__ == "__main__":
             "ffmpeg-python",
             "requests",
             "xfuser",
+            "gradio>=5.0.0"
         ],
         url="",
         description="A 30B DiT based text to video and image generation model",

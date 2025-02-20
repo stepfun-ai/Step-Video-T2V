@@ -121,6 +121,9 @@ pip install flash-attn --no-build-isolation  ## flash-attn is optional
 ```
 
 ###  🚀 4.3 Inference Scripts
+
+#### Multi-GPU Parallel Deployment
+
 - We employed a decoupling strategy for the text encoder, VAE decoding, and DiT to optimize GPU resource utilization by DiT. As a result, a dedicated GPU is needed to handle the API services for the text encoder's embeddings and VAE decoding.
 ```bash
 python api/call_remote_server.py --model_dir where_you_download_dir &  ## We assume you have more than 4 GPUs available. This command will return the URL for both the caption API and the VAE API. Please use the returned URL in the following command.
@@ -131,6 +134,10 @@ model_dir=where_you_download_dir
 
 torchrun --nproc_per_node $parallel run_parallel.py --model_dir $model_dir --vae_url $url --caption_url $url  --ulysses_degree $parallel --prompt "一名宇航员在月球上发现一块石碑，上面印有“stepfun”字样，闪闪发光" --infer_steps 50  --cfg_scale 9.0 --time_shift 13.0
 ```
+
+#### Single-GPU Inference and Quantization
+
+- The open-source project DiffSynth-Studio by ModelScope offers single-GPU inference and quantization support, which can significantly reduce the VRAM required. Please refer to [their examples](https://github.com/modelscope/DiffSynth-Studio/tree/main/examples/stepvideo) for more information.
 
 ###  🚀 4.4 Best-of-Practice Inference settings
 Step-Video-T2V exhibits robust performance in inference settings, consistently generating high-fidelity and dynamic videos. However, our experiments reveal that variations in inference hyperparameters can have a substantial effect on the trade-off between video fidelity and dynamics. To achieve optimal results, we recommend the following best practices for tuning inference parameters:

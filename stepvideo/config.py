@@ -174,4 +174,10 @@ def add_parallel_args(parser: argparse.ArgumentParser):
         help="Ulysses degree.",
     )
 
+    group.add_argument(
+        "--tensor_parallel_degree",
+        type=int,
+        default=1,
+        help="Tensor parallel degree.",
+    )
     return parser

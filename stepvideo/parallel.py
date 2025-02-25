@@ -3,7 +3,7 @@ import xfuser
 import torch
 
 
-def initialize_parall_group(ring_degree, ulysses_degree):
+def initialize_parall_group(ring_degree, ulysses_degree, tensor_parallel_degree):
     dist.init_process_group("nccl")
     xfuser.core.distributed.init_distributed_environment(
         rank=dist.get_rank(), 
@@ -11,9 +11,10 @@ def initialize_parall_group(ring_degree, ulysses_degree):
     )
     
     xfuser.core.distributed.initialize_model_parallel(
-        sequence_parallel_degree=dist.get_world_size(),
+        sequence_parallel_degree=ulysses_degree,
         ring_degree=ring_degree,
         ulysses_degree=ulysses_degree,
+        tensor_parallel_degree=tensor_parallel_degree,
     )
     torch.cuda.set_device(dist.get_rank())
 

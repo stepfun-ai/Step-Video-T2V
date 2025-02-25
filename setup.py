@@ -41,7 +41,8 @@ if __name__ == "__main__":
             "flask_restful",
             "ffmpeg-python",
             "requests",
-            "xfuser",
+            "xfuser==0.4.2rc2",
+            "nvidia-cublas-cu12==12.6.3.3"
         ],
         url="",
         description="A 30B DiT based text to video and image generation model",

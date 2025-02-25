@@ -15,13 +15,12 @@ import torch
 from torch import nn
 import os
 from einops import rearrange, repeat
+from xfuser.model_executor.models.customized.step_video_t2v.blocks import StepVideoTransformerBlock, PatchEmbed
+
 from stepvideo.utils import with_empty_init
 from stepvideo.parallel import parallel_forward
-from stepvideo.modules.blocks import (
-        StepVideoTransformerBlock, 
-        PatchEmbed
-    )
-from stepvideo.modules.normalization import (
+
+from xfuser.model_executor.models.customized.step_video_t2v.normalization import (
         PixArtAlphaTextProjection,
         AdaLayerNormSingle
     )

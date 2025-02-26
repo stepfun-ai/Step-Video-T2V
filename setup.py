@@ -41,7 +41,7 @@ if __name__ == "__main__":
             "flask_restful",
             "ffmpeg-python",
             "requests",
-            "xfuser>=0.4.2rc2"
+            "xfuser==0.4.2rc2"
         ],
         url="",
         description="A 30B DiT based text to video and image generation model",

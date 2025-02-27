@@ -133,7 +133,11 @@ parallel=4  # or parallel=8
 url='127.0.0.1'
 model_dir=where_you_download_dir
 
-torchrun --nproc_per_node $parallel run_parallel.py --model_dir $model_dir --vae_url $url --caption_url $url  --ulysses_degree $parallel --prompt "一名宇航员在月球上发现一块石碑，上面印有“stepfun”字样，闪闪发光" --infer_steps 50  --cfg_scale 9.0 --time_shift 13.0
+tp_degree=2
+ulysses_degree=2
+
+# make sure tp_degree x ulysses_degree = parallel
+torchrun --nproc_per_node $parallel run_parallel.py --model_dir $model_dir --vae_url $url --caption_url $url  --ulysses_degree $ulysses_degree --tensor_parallel_degree $tp_degree --prompt "一名宇航员在月球上发现一块石碑，上面印有“stepfun”字样，闪闪发光" --infer_steps 50  --cfg_scale 9.0 --time_shift 13.0
 ```
 
 #### Single-GPU Inference and Quantization
@@ -148,6 +152,7 @@ Step-Video-T2V exhibits robust performance in inference settings, consistently g
 | Step-Video-T2V | 30-50 | 9.0 |  13.0 | 204
 | Step-Video-T2V-Turbo (Inference Step Distillation) | 10-15 | 5.0 | 17.0 | 204 |
 
+For more performance results, please refer to the [benchmark metrics](https://github.com/xdit-project/xDiT/blob/main/docs/performance/stepvideo.md) from the xDiT team:
 
 ## 5. Benchmark
 We are releasing [Step-Video-T2V Eval](https://github.com/stepfun-ai/Step-Video-T2V/blob/main/benchmark/Step-Video-T2V-Eval) as a new benchmark, featuring 128 Chinese prompts sourced from real users. This benchmark is designed to evaluate the quality of generated videos across 11 distinct categories: Sports, Food, Scenery, Animals, Festivals, Combination Concepts, Surreal, People, 3D Animation, Cinematography, and Style.

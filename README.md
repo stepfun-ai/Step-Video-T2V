@@ -13,7 +13,7 @@
 </div>
 
 ## 🔥🔥🔥 News!!
-* Mar 17, 2025: 👋 We release the inference code and model weights of Step-Video-TI2V, an image-to-video model based on Step-Video-T2V. [Download](https://github.com/stepfun-ai/Step-Video-Ti2V)
+* Mar 17, 2025: 👋 We release the [Step-Video-TI2V](https://github.com/stepfun-ai/Step-Video-Ti2V), an image-to-video model based on Step-Video-T2V.
 * Feb 17, 2025: 👋 We release the inference code and model weights of Step-Video-T2V. [Download](https://huggingface.co/stepfun-ai/stepvideo-t2v)
 * Feb 17, 2025: 👋 We release the inference code and model weights of Step-Video-T2V-Turbo. [Download](https://huggingface.co/stepfun-ai/stepvideo-t2v-turbo)
 * Feb 17, 2025: 🎉 We have made our technical report available as open source. [Read](https://arxiv.org/abs/2502.10248)

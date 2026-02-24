@@ -5,12 +5,73 @@ from flask_restful import Api, Resource
 import pickle
 import argparse
 import threading
-import argparse
-
+import io
 
 device = f'cuda:{torch.cuda.device_count()-1}'
 torch.cuda.set_device(device)
 dtype = torch.bfloat16
+
+
+# ============ SECURITY PATCH: Restricted Pickle Handler ============
+class RestrictedUnpickler(pickle.Unpickler):
+    """
+    Restricted unpickler that only allows safe numpy/torch types.
+    Prevents arbitrary code execution through pickle deserialization.
+    CVE: Unsafe Pickle Deserialization RCE Prevention
+    """
+    
+    # Whitelist of safe classes and modules for AI operations
+    ALLOWED_MODULES = {
+        'numpy': {'ndarray', 'dtype', 'core', 'random_state', 'fortran_state', 'matrix'},
+        'numpy.core': {'multiarray'},
+        'torch': {'Tensor', '_utils', 'storage', 'nn', 'distributions'},
+        'torch._utils': {'_rebuild_tensor_v2', '_rebuild_qtensor'},
+        'torch.storage': {'_load_from_bytes'},
+        'collections': {'OrderedDict', 'namedtuple'},
+        '__builtin__': {'slice', 'ellipsis', 'complex', 'frozenset'},
+        'builtins': {'slice', 'ellipsis', 'complex', 'frozenset'},
+    }
+    
+    def find_class(self, module, name):
+        """Override find_class to restrict what can be unpickled."""
+        
+        # Check if module is in whitelist
+        if module not in self.ALLOWED_MODULES:
+            raise pickle.UnpicklingError(
+                f"SECURITY VIOLATION: Module '{module}' is not allowed for deserialization"
+            )
+        
+        # Check if class name is in whitelist for that module
+        allowed_names = self.ALLOWED_MODULES[module]
+        
+        if name not in allowed_names:
+            raise pickle.UnpicklingError(
+                f"SECURITY VIOLATION: Class '{module}.{name}' is not allowed for deserialization"
+            )
+        
+        return super().find_class(module, name)
+
+
+def safe_pickle_loads(data):
+    """
+    Safely deserialize pickle data with whitelist restrictions.
+    
+    Args:
+        data: bytes - pickled data
+        
+    Returns:
+        Deserialized object
+        
+    Raises:
+        pickle.UnpicklingError: If unpickling attempts unsafe operations
+    """
+    try:
+        unpickler = RestrictedUnpickler(io.BytesIO(data))
+        return unpickler.load()
+    except pickle.UnpicklingError as e:
+        raise ValueError(f"Pickle deserialization blocked: {str(e)}")
+    except Exception as e:
+        raise ValueError(f"Invalid pickle data: {str(e)}")
 
 def parsed_args():
     parser = argparse.ArgumentParser(description="StepVideo API Functions")
@@ -21,7 +82,6 @@ def parsed_args():
     parser.add_argument('--port', type=str, default='8080')
     args = parser.parse_args()
     return args
-
 
 
 class StepVaePipeline(Resource):
@@ -40,7 +100,7 @@ class StepVaePipeline(Resource):
             version=version,
         ).to(dtype).to(device).eval()
         print("Inintialized vae...")
-        return model
+        return model 
  
     def decode(self, samples, *args, **kwargs):
         with torch.no_grad():
@@ -63,19 +123,22 @@ class VAEapi(Resource):
     def get(self):
         with lock:
             try:
-                feature = pickle.loads(request.get_data())
+                # SECURITY PATCH: Use safe_pickle_loads instead of unsafe pickle.loads
+                feature = safe_pickle_loads(request.get_data())
                 feature['api'] = 'vae'
             
                 feature = {k:v for k, v in feature.items() if v is not None}
                 video_latents = self.vae_pipeline.decode(**feature)
                 response = pickle.dumps(video_latents)
 
+            except ValueError as e:
+                print("Caught Validation Error: ", e)
+                return Response(str(e), status=400)
             except Exception as e:
                 print("Caught Exception: ", e)
-                return Response(e)
+                return Response(str(e), status=500)
             
             return Response(response)
-
 
 
 class CaptionPipeline(Resource):
@@ -93,7 +156,7 @@ class CaptionPipeline(Resource):
         from stepvideo.text_encoder.clip import HunyuanClip
         clip = HunyuanClip(model_dir, max_length=77).to(device).eval()
         print("Inintialized clip encoder...")
-        return clip
+        return clip 
  
     def embedding(self, prompts, *args, **kwargs):
         with torch.no_grad():
@@ -126,19 +189,22 @@ class Captionapi(Resource):
     def get(self):
         with lock:
             try:
-                feature = pickle.loads(request.get_data())
+                # SECURITY PATCH: Use safe_pickle_loads instead of unsafe pickle.loads
+                feature = safe_pickle_loads(request.get_data())
                 feature['api'] = 'caption'
             
                 feature = {k:v for k, v in feature.items() if v is not None}
                 embeddings = self.caption_pipeline.embedding(**feature)
                 response = pickle.dumps(embeddings)
 
+            except ValueError as e:
+                print("Caught Validation Error: ", e)
+                return Response(str(e), status=400)
             except Exception as e:
                 print("Caught Exception: ", e)
-                return Response(e)
+                return Response(str(e), status=500)
             
             return Response(response)
-
 
 
 
@@ -177,4 +243,3 @@ if __name__ == "__main__":
     args = parsed_args()
     flask_server = RemoteServer(args)
     flask_server.run(host="0.0.0.0", port=args.port)
-    

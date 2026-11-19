@@ -35,7 +35,8 @@ class VideoProcessor:
     
     def postprocess_video(self, video_tensor, output_file_name='', output_type="mp4", crop2standard540p=True):
         if len(self.name_suffix) == 0:
-            video_path = os.path.join(self.save_path, f"{output_file_name}-{str(datetime.datetime.now())}.{output_type}")
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+            video_path = os.path.join(self.save_path, f"{output_file_name}-{timestamp}.{output_type}")
         else:
             video_path = os.path.join(self.save_path, f"{output_file_name}-{self.name_suffix}.{output_type}")
         
